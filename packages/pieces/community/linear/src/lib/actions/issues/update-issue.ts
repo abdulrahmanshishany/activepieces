@@ -1,4 +1,4 @@
-import { createAction, Property } from '@activepieces/pieces-framework';
+import { createAction, MarkdownVariant, Property } from '@activepieces/pieces-framework';
 import { linearAuth } from '../../..';
 import { props } from '../../common/props';
 import { makeClient } from '../../common/client';
@@ -9,27 +9,38 @@ export const linearUpdateIssue = createAction({
   name: 'linear_update_issue',
   classification: 'WRITE',
   displayName: 'Update Issue',
-  description: 'Update a issue in Linear Workspace',
+  description: 'Changes the fields you fill in on an existing issue.',
   audience: 'both',
   aiMetadata: {
     description: 'Updates an existing Linear issue identified by its issue ID, changing fields such as title, description, assignee, status, labels, or priority. Use to modify an issue already created. Only the provided fields are changed; repeating the same update is idempotent.',
     idempotent: true,
   },
   props: {
-    team_id: props.team_id(),
+    team_id: {
+      ...props.team_id(),
+      description: 'The team the issue belongs to.',
+    },
     issue_id: props.issue_id(),
+    hint: Property.MarkDown({
+      value: 'Empty fields keep their current value.',
+      variant: MarkdownVariant.INFO,
+    }),
     title: Property.ShortText({
       displayName: 'Title',
       required: false,
     }),
     description: Property.LongText({
       displayName: 'Description',
+      description: 'Markdown is supported.',
       required: false,
     }),
     state_id: props.status_id(),
-    labels: props.labels(),
-    assignee_id: props.assignee_id(),
     priority_id: props.priority_id(),
+    assignee_id: props.assignee_id(),
+    labels: {
+      ...props.labels(),
+      description: "Replaces the issue's current labels.",
+    },
   },
   async run({ auth, propsValue }) {
     const issueId = propsValue.issue_id!;

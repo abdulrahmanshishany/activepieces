@@ -1,4 +1,4 @@
-import { createAction, Property } from '@activepieces/pieces-framework';
+import { createAction, MarkdownVariant, Property } from '@activepieces/pieces-framework';
 import { linearAuth } from '../../..';
 import { props } from '../../common/props';
 import { makeClient } from '../../common/client';
@@ -8,40 +8,55 @@ export const linearUpdateProject = createAction({
   name: 'linear_update_project',
   classification: 'WRITE',
   displayName: 'Update Project',
-  description: 'Update a existing project in Linear workspace',
+  description: 'Changes the fields you fill in on an existing project.',
   audience: 'both',
   aiMetadata: {
     description: 'Updates an existing Linear project identified by its project ID, changing fields such as name, description, icon, color, start/target dates, or status. Use to modify a project already created. Repeating the same update is idempotent.',
     idempotent: true,
   },
   props: {
-    team_id: props.team_id(),
+    team_id: {
+      ...props.team_id(),
+      description: 'The team the project belongs to.',
+    },
     project_id: props.project_id(),
+    hint: Property.MarkDown({
+      value: 'Empty fields keep their current value.',
+      variant: MarkdownVariant.INFO,
+    }),
     name: Property.ShortText({
-      displayName: 'Project Name',
+      displayName: 'Name',
       required: true,
     }),
     description: Property.LongText({
       displayName: 'Description',
+      description: 'Short summary shown under the name, up to 255 characters.',
+      required: false,
+    }),
+    state: props.project_status(false),
+    startDate: Property.DateTime({
+      displayName: 'Start Date',
+      placeholder: '2026-10-01',
+      required: false,
+    }),
+    targetDate: Property.DateTime({
+      displayName: 'Target Date',
+      description: 'The planned finish date.',
+      placeholder: '2026-12-15',
       required: false,
     }),
     icon: Property.ShortText({
       displayName: 'Icon',
       required: false,
+      advanced: true,
     }),
     color: Property.ShortText({
       displayName: 'Color',
+      description: 'Hex code.',
+      placeholder: '#5E6AD2',
       required: false,
+      advanced: true,
     }),
-    startDate: Property.DateTime({
-      displayName: 'Start Date',
-      required: false,
-    }),
-    targetDate: Property.DateTime({
-      displayName: 'Target Date',
-      required: false,
-    }),
-    state: props.project_status(false),
   },
   async run({ auth, propsValue }) {
     const client = makeClient(auth);

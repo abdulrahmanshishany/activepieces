@@ -56,7 +56,7 @@ export const linear = createPiece({
   description: 'Issue tracking for modern software teams',
 
   auth: linearAuth,
-  minimumSupportedRelease: '0.30.0',
+  minimumSupportedRelease: '0.88.2',
   logoUrl: 'https://cdn.activepieces.com/pieces/linear.png',
   authors: ['lldiegon', 'kishanprmr', 'abuaboud'],
   categories: [PieceCategory.PRODUCTIVITY],

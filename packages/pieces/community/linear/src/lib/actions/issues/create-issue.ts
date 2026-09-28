@@ -9,27 +9,35 @@ export const linearCreateIssue = createAction({
   name: 'linear_create_issue',
   classification: 'WRITE',
   displayName: 'Create Issue',
-  description: 'Create a new issue in Linear workspace',
+  description: 'Creates an issue in a Linear team.',
   audience: 'both',
   aiMetadata: {
     description: 'Creates a new issue in a Linear team, with optional assignee, status, labels, priority, and template. Use to file a task, bug, or work item. Requires a team ID and title; not idempotent, each call creates a distinct issue.',
     idempotent: false,
   },
   props: {
-    team_id: props.team_id(),
+    team_id: {
+      ...props.team_id(),
+      description: 'The issue is created in this team.',
+    },
     title: Property.ShortText({
       displayName: 'Title',
+      placeholder: 'Checkout fails on Safari',
       required: true,
     }),
     description: Property.LongText({
       displayName: 'Description',
+      description: 'Markdown is supported.',
       required: false,
     }),
-    state_id: props.status_id(),
-    labels: props.labels(),
-    assignee_id: props.assignee_id(),
+    state_id: {
+      ...props.status_id(),
+      description: "Leave empty to use the team's default.",
+    },
     priority_id: props.priority_id(),
-    template_id: props.template_id()
+    assignee_id: props.assignee_id(),
+    labels: props.labels(),
+    template_id: { ...props.template_id(), advanced: true },
   },
   async run({ auth, propsValue }) {
     const issue: LinearDocument.IssueCreateInput = {

@@ -8,39 +8,54 @@ export const linearCreateProject = createAction({
   name: 'linear_create_project',
   classification: 'WRITE',
   displayName: 'Create Project',
-  description: 'Create a new project in Linear workspace',
+  description: 'Creates a project in a Linear team.',
   audience: 'both',
   aiMetadata: {
     description: 'Creates a new project under a Linear team, with optional description, icon, color, start/target dates, and status. Use to set up a new project to group issues. Requires a team ID and project name; not idempotent, each call creates a distinct project.',
     idempotent: false,
   },
   props: {
-    team_id: props.team_id(),
+    team_id: {
+      ...props.team_id(),
+      description: 'The project is created in this team.',
+    },
     name: Property.ShortText({
-      displayName: 'Project Name',
+      displayName: 'Name',
+      placeholder: 'Website Redesign',
       required: true,
     }),
     description: Property.LongText({
       displayName: 'Description',
+      description: 'Short summary shown under the name, up to 255 characters.',
+      required: false,
+    }),
+    state: {
+      ...props.project_status(false),
+      description: 'Leave empty to use the default status.',
+    },
+    startDate: Property.DateTime({
+      displayName: 'Start Date',
+      placeholder: '2026-10-01',
+      required: false,
+    }),
+    targetDate: Property.DateTime({
+      displayName: 'Target Date',
+      description: 'The planned finish date.',
+      placeholder: '2026-12-15',
       required: false,
     }),
     icon: Property.ShortText({
       displayName: 'Icon',
       required: false,
+      advanced: true,
     }),
     color: Property.ShortText({
       displayName: 'Color',
+      description: 'Hex code.',
+      placeholder: '#5E6AD2',
       required: false,
+      advanced: true,
     }),
-    startDate: Property.DateTime({
-      displayName: 'Start Date',
-      required: false,
-    }),
-    targetDate: Property.DateTime({
-      displayName: 'Target Date',
-      required: false,
-    }),
-    state: props.project_status(false),
   },
   async run({ auth, propsValue }) {
     const client = makeClient(auth);
