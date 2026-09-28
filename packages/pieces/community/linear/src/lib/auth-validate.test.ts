@@ -29,7 +29,10 @@ describe('linearAuth.validate', () => {
   it('rejects a key that does not look like a Linear personal api key without calling Linear', async () => {
     const result = await validate('not-a-linear-key')
 
-    expect(result).toEqual({ valid: false, error: 'Invalid API Key' })
+    expect(result).toEqual({
+      valid: false,
+      error: 'Linear personal API keys start with lin_api_. Check that you copied the whole key.',
+    })
     expect(mockViewer).not.toHaveBeenCalled()
   })
 
