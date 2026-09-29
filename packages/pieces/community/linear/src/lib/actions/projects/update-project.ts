@@ -84,7 +84,6 @@ export const linearUpdateProject = createAction({
   async run({ auth, propsValue }) {
     const client = makeClient(auth);
     const input: Record<string, unknown> = {
-      teamIds: [propsValue.team_id!],
       name: propsValue.name,
       description: propsValue.description,
       icon: propsValue.icon,
