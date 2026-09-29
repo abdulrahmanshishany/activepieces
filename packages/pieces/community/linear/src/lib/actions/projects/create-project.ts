@@ -80,7 +80,7 @@ export const linearCreateProject = createAction({
       name: propsValue.name,
       description: propsValue.description,
       icon: propsValue.icon,
-      color: propsValue.color,
+      color: propsValue.color || undefined,
       startDate: propsValue.startDate,
       targetDate: propsValue.targetDate,
     };
