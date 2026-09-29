@@ -408,7 +408,7 @@ auth: linearAuth,
             options: [],
           };
         }
-        if (!team_id) {
+        if (!team_id || typeof team_id !== 'string') {
           return {
             disabled: true,
             placeholder: 'Select a team first',
@@ -423,6 +423,15 @@ auth: linearAuth,
 
         do {
           const projects = await client.listProjects({
+            filter: {
+              accessibleTeams: {
+                some: {
+                  id: {
+                    eq: team_id,
+                  },
+                },
+              },
+            },
             orderBy: LinearDocument.PaginationOrderBy.UpdatedAt,
             first: 100,
             after: cursor,
@@ -439,6 +448,7 @@ auth: linearAuth,
         return {
           disabled: false,
           options,
+          placeholder: options.length === 0 ? 'This team has no projects' : undefined,
         };
       },
     }),
