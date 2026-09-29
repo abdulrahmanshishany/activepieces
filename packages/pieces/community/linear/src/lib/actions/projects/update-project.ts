@@ -71,6 +71,8 @@ export const linearUpdateProject = createAction({
     }),
     icon: Property.ShortText({
       displayName: 'Icon',
+      description: 'An emoji shortcode.',
+      placeholder: ':rocket:',
       required: false,
       advanced: true,
     }),
