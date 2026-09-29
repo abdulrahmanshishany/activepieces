@@ -90,9 +90,12 @@ export const linearCreateProject = createAction({
       const match = statuses.find(
         (s: { type: string }) => s.type === selectedState,
       );
-      if (match) {
-        input['statusId'] = match.id;
+      if (!match) {
+        throw new Error(
+          `No "${selectedState}" project status exists in this Linear workspace. Available statuses: ${statuses.map((s) => s.name).join(', ')}.`,
+        );
       }
+      input['statusId'] = match.id;
     }
     const query = `
       mutation CreateProject($input: ProjectCreateInput!) {
