@@ -49,7 +49,7 @@ export const linearUpdateProject = createAction({
     }),
     name: Property.ShortText({
       displayName: 'Name',
-      required: true,
+      required: false,
     }),
     description: Property.LongText({
       displayName: 'Description',
