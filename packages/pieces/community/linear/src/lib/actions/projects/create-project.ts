@@ -14,6 +14,22 @@ export const linearCreateProject = createAction({
     description: 'Creates a new project under a Linear team, with optional description, icon, color, start/target dates, and status. Use to set up a new project to group issues. Requires a team ID and project name; not idempotent, each call creates a distinct project.',
     idempotent: false,
   },
+  propertyGroups: [
+    {
+      key: 'project',
+      display: 'section',
+      label: 'Project',
+      icon: 'file',
+      props: ['team_id', 'name', 'description', 'state'],
+    },
+    {
+      key: 'timeline',
+      display: 'section',
+      label: 'Timeline',
+      icon: 'calendar',
+      props: ['startDate', 'targetDate'],
+    },
+  ],
   props: {
     team_id: {
       ...props.team_id(),
@@ -37,22 +53,22 @@ export const linearCreateProject = createAction({
       displayName: 'Start Date',
       placeholder: '2026-10-01',
       required: false,
+      width: 'half',
     }),
     targetDate: Property.DateTime({
       displayName: 'Target Date',
-      description: 'The planned finish date.',
       placeholder: '2026-12-15',
       required: false,
+      width: 'half',
     }),
     icon: Property.ShortText({
       displayName: 'Icon',
       required: false,
       advanced: true,
     }),
-    color: Property.ShortText({
+    color: Property.Color({
       displayName: 'Color',
-      description: 'Hex code.',
-      placeholder: '#5E6AD2',
+      description: "Leave empty for Linear's default color.",
       required: false,
       advanced: true,
     }),

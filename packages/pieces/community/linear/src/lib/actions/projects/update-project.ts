@@ -14,6 +14,29 @@ export const linearUpdateProject = createAction({
     description: 'Updates an existing Linear project identified by its project ID, changing fields such as name, description, icon, color, start/target dates, or status. Use to modify a project already created. Repeating the same update is idempotent.',
     idempotent: true,
   },
+  propertyGroups: [
+    {
+      key: 'target',
+      display: 'section',
+      label: 'Project to update',
+      icon: 'file',
+      props: ['team_id', 'project_id'],
+    },
+    {
+      key: 'changes',
+      display: 'section',
+      label: 'Changes',
+      icon: 'text',
+      props: ['hint', 'name', 'description', 'state'],
+    },
+    {
+      key: 'timeline',
+      display: 'section',
+      label: 'Timeline',
+      icon: 'calendar',
+      props: ['startDate', 'targetDate'],
+    },
+  ],
   props: {
     team_id: {
       ...props.team_id(),
@@ -38,22 +61,22 @@ export const linearUpdateProject = createAction({
       displayName: 'Start Date',
       placeholder: '2026-10-01',
       required: false,
+      width: 'half',
     }),
     targetDate: Property.DateTime({
       displayName: 'Target Date',
-      description: 'The planned finish date.',
       placeholder: '2026-12-15',
       required: false,
+      width: 'half',
     }),
     icon: Property.ShortText({
       displayName: 'Icon',
       required: false,
       advanced: true,
     }),
-    color: Property.ShortText({
+    color: Property.Color({
       displayName: 'Color',
-      description: 'Hex code.',
-      placeholder: '#5E6AD2',
+      description: 'Leave empty to keep the current color.',
       required: false,
       advanced: true,
     }),
