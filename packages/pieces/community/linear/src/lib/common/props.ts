@@ -304,7 +304,7 @@ auth: linearAuth,
           });
 
           for (const user of users.nodes) {
-            options.push({ label: user.name, value: user.id, description: user.email });
+            options.push({ label: user.name, value: user.id });
           }
 
           hasNextPage = users.pageInfo.hasNextPage;
@@ -386,7 +386,6 @@ auth: linearAuth,
             return {
               label: issue.title,
               value: issue.id,
-              description: issue.identifier,
             };
           }),
         };
