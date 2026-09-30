@@ -8,39 +8,72 @@ export const linearCreateProject = createAction({
   name: 'linear_create_project',
   classification: 'WRITE',
   displayName: 'Create Project',
-  description: 'Create a new project in Linear workspace',
+  description: 'Creates a project in a Linear team.',
   audience: 'both',
   aiMetadata: {
     description: 'Creates a new project under a Linear team, with optional description, icon, color, start/target dates, and status. Use to set up a new project to group issues. Requires a team ID and project name; not idempotent, each call creates a distinct project.',
     idempotent: false,
   },
+  propertyGroups: [
+    {
+      key: 'project',
+      display: 'section',
+      label: 'Project',
+      icon: 'file',
+      props: ['team_id', 'name', 'description', 'state'],
+    },
+    {
+      key: 'timeline',
+      display: 'section',
+      label: 'Timeline',
+      icon: 'calendar',
+      props: ['startDate', 'targetDate'],
+    },
+  ],
   props: {
-    team_id: props.team_id(),
+    team_id: {
+      ...props.team_id(),
+      description: 'The project is created in this team.',
+    },
     name: Property.ShortText({
-      displayName: 'Project Name',
+      displayName: 'Name',
+      placeholder: 'Website Redesign',
       required: true,
     }),
     description: Property.LongText({
       displayName: 'Description',
+      description: 'Short summary shown under the name, up to 255 characters.',
       required: false,
     }),
-    icon: Property.ShortText({
-      displayName: 'Icon',
-      required: false,
-    }),
-    color: Property.ShortText({
-      displayName: 'Color',
-      required: false,
-    }),
+    state: {
+      ...props.project_status(false),
+      description: 'Leave empty to use the default status.',
+    },
     startDate: Property.DateTime({
       displayName: 'Start Date',
+      placeholder: '2026-10-01',
       required: false,
+      width: 'half',
     }),
     targetDate: Property.DateTime({
       displayName: 'Target Date',
+      placeholder: '2026-12-15',
       required: false,
+      width: 'half',
     }),
-    state: props.project_status(false),
+    icon: Property.ShortText({
+      displayName: 'Icon',
+      description: 'An emoji shortcode.',
+      placeholder: ':rocket:',
+      required: false,
+      advanced: true,
+    }),
+    color: Property.Color({
+      displayName: 'Color',
+      description: "Leave empty for Linear's default color.",
+      required: false,
+      advanced: true,
+    }),
   },
   async run({ auth, propsValue }) {
     const client = makeClient(auth);
@@ -49,7 +82,7 @@ export const linearCreateProject = createAction({
       name: propsValue.name,
       description: propsValue.description,
       icon: propsValue.icon,
-      color: propsValue.color,
+      color: propsValue.color || undefined,
       startDate: propsValue.startDate,
       targetDate: propsValue.targetDate,
     };
@@ -59,9 +92,12 @@ export const linearCreateProject = createAction({
       const match = statuses.find(
         (s: { type: string }) => s.type === selectedState,
       );
-      if (match) {
-        input['statusId'] = match.id;
+      if (!match) {
+        throw new Error(
+          `No "${selectedState}" project status exists in this Linear workspace. Available statuses: ${statuses.map((s) => s.name).join(', ')}.`,
+        );
       }
+      input['statusId'] = match.id;
     }
     const query = `
       mutation CreateProject($input: ProjectCreateInput!) {

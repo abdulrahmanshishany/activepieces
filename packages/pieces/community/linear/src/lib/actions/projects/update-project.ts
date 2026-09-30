@@ -1,4 +1,4 @@
-import { createAction, Property } from '@activepieces/pieces-framework';
+import { createAction, MarkdownVariant, Property } from '@activepieces/pieces-framework';
 import { linearAuth } from '../../..';
 import { props } from '../../common/props';
 import { makeClient } from '../../common/client';
@@ -8,49 +8,88 @@ export const linearUpdateProject = createAction({
   name: 'linear_update_project',
   classification: 'WRITE',
   displayName: 'Update Project',
-  description: 'Update a existing project in Linear workspace',
+  description: 'Changes the fields you fill in on an existing project.',
   audience: 'both',
   aiMetadata: {
     description: 'Updates an existing Linear project identified by its project ID, changing fields such as name, description, icon, color, start/target dates, or status. Use to modify a project already created. Repeating the same update is idempotent.',
     idempotent: true,
   },
+  propertyGroups: [
+    {
+      key: 'target',
+      display: 'section',
+      label: 'Project to update',
+      icon: 'file',
+      props: ['team_id', 'project_id'],
+    },
+    {
+      key: 'changes',
+      display: 'section',
+      label: 'Changes',
+      icon: 'text',
+      props: ['hint', 'name', 'description', 'state'],
+    },
+    {
+      key: 'timeline',
+      display: 'section',
+      label: 'Timeline',
+      icon: 'calendar',
+      props: ['startDate', 'targetDate'],
+    },
+  ],
   props: {
-    team_id: props.team_id(),
+    team_id: {
+      ...props.team_id(),
+      description: 'The team the project belongs to.',
+    },
     project_id: props.project_id(),
+    hint: Property.MarkDown({
+      value: 'Empty fields keep their current value.',
+      variant: MarkdownVariant.INFO,
+    }),
     name: Property.ShortText({
-      displayName: 'Project Name',
-      required: true,
+      displayName: 'Name',
+      required: false,
     }),
     description: Property.LongText({
       displayName: 'Description',
-      required: false,
-    }),
-    icon: Property.ShortText({
-      displayName: 'Icon',
-      required: false,
-    }),
-    color: Property.ShortText({
-      displayName: 'Color',
-      required: false,
-    }),
-    startDate: Property.DateTime({
-      displayName: 'Start Date',
-      required: false,
-    }),
-    targetDate: Property.DateTime({
-      displayName: 'Target Date',
+      description: 'Short summary shown under the name, up to 255 characters.',
       required: false,
     }),
     state: props.project_status(false),
+    startDate: Property.DateTime({
+      displayName: 'Start Date',
+      placeholder: '2026-10-01',
+      required: false,
+      width: 'half',
+    }),
+    targetDate: Property.DateTime({
+      displayName: 'Target Date',
+      placeholder: '2026-12-15',
+      required: false,
+      width: 'half',
+    }),
+    icon: Property.ShortText({
+      displayName: 'Icon',
+      description: 'An emoji shortcode.',
+      placeholder: ':rocket:',
+      required: false,
+      advanced: true,
+    }),
+    color: Property.Color({
+      displayName: 'Color',
+      description: 'Leave empty to keep the current color.',
+      required: false,
+      advanced: true,
+    }),
   },
   async run({ auth, propsValue }) {
     const client = makeClient(auth);
     const input: Record<string, unknown> = {
-      teamIds: [propsValue.team_id!],
       name: propsValue.name,
       description: propsValue.description,
       icon: propsValue.icon,
-      color: propsValue.color,
+      color: propsValue.color || undefined,
       startDate: propsValue.startDate,
       targetDate: propsValue.targetDate,
     };
@@ -60,9 +99,12 @@ export const linearUpdateProject = createAction({
       const match = statuses.find(
         (s: { type: string }) => s.type === selectedState,
       );
-      if (match) {
-        input['statusId'] = match.id;
+      if (!match) {
+        throw new Error(
+          `No "${selectedState}" project status exists in this Linear workspace. Available statuses: ${statuses.map((s) => s.name).join(', ')}.`,
+        );
       }
+      input['statusId'] = match.id;
     }
     const query = `
       mutation UpdateProject($id: String!, $input: ProjectUpdateInput!) {

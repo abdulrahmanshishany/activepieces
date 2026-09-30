@@ -9,21 +9,29 @@ export const linearCreateComment = createAction({
   name: 'linear_create_comment',
   classification: 'WRITE',
   displayName: 'Create Comment',
-  description: 'Create a new comment on an issue in Linear workspace',
+  description: 'Adds a comment to an issue.',
   audience: 'both',
   aiMetadata: {
     description: 'Posts a new comment on a Linear issue identified by its issue ID. Use to add a note, reply, or status update to an existing issue. Requires the issue ID and comment body; not idempotent, each call appends a new comment.',
     idempotent: false,
   },
   props: {
-    team_id: props.team_id(),
-    user_id: props.assignee_id(),
+    team_id: {
+      ...props.team_id(),
+      description: 'The team the issue belongs to.',
+    },
     issue_id: props.issue_id(),
     body: Property.LongText({
-      displayName: 'Comment Body',
-      description: 'The content of the comment',
+      displayName: 'Comment',
+      description: 'Markdown is supported.',
       required: true,
     }),
+    user_id: {
+      ...props.assignee_id(),
+      displayName: 'Author',
+      description: "Not used: comments post as the API key's owner.",
+      advanced: true,
+    },
   },
   async run({ auth, propsValue }) {
     const comment: LinearDocument.CommentCreateInput = {

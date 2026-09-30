@@ -16,11 +16,12 @@ import { linearUpdatedProject } from './lib/triggers/updated-project';
 import { linearRemovedProject } from './lib/triggers/removed-project';
 
 const markdown = `
-To obtain your API key, follow these steps:
+1. In Linear, open [Settings > Account > Security & access](https://linear.app/settings/account/security).
+2. Under **Personal API keys**, create a new key and name it.
+3. Choose **Full access**. Actions alone only need **Read** and **Write**.
+4. Copy the key (it starts with \`lin_api_\`) and paste it below.
 
-1. Go to settings by clicking your profile-pic (top-left)
-2. Go to Security & Access section
-3. On Personal API keys, give label and press create key.`;
+Triggers create a webhook in Linear, so they need a key from a workspace admin.`;
 
 export const linearAuth = PieceAuth.SecretText({
   displayName: 'API Key',
@@ -30,7 +31,7 @@ export const linearAuth = PieceAuth.SecretText({
     if (!auth.startsWith('lin_api_')) {
       return {
         valid: false,
-        error: 'Invalid API Key',
+        error: 'Linear personal API keys start with lin_api_. Check that you copied the whole key.',
       };
     }
     const { error } = await tryCatch(() => new LinearClient({ apiKey: auth }).viewer);
@@ -56,7 +57,7 @@ export const linear = createPiece({
   description: 'Issue tracking for modern software teams',
 
   auth: linearAuth,
-  minimumSupportedRelease: '0.30.0',
+  minimumSupportedRelease: '0.88.2',
   logoUrl: 'https://cdn.activepieces.com/pieces/linear.png',
   authors: ['lldiegon', 'kishanprmr', 'abuaboud'],
   categories: [PieceCategory.PRODUCTIVITY],

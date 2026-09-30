@@ -16,7 +16,7 @@ auth: linearAuth,
         if (!auth) {
           return {
             disabled: true,
-            placeholder: 'connect your account first',
+            placeholder: 'Connect your Linear account first',
             options: [],
           };
         }
@@ -50,15 +50,21 @@ auth: linearAuth,
   status_id: (required = false) =>
     Property.Dropdown({
 auth: linearAuth,
-      description: 'Status of the Issue',
       displayName: 'Status',
       required,
       refreshers: ['auth', 'team_id'],
       options: async ({ auth, team_id }) => {
-        if (!auth || !team_id) {
+        if (!auth) {
           return {
             disabled: true,
-            placeholder: 'connect your account first and select team',
+            placeholder: 'Connect your Linear account first',
+            options: [],
+          };
+        }
+        if (!team_id) {
+          return {
+            disabled: true,
+            placeholder: 'Select a team first',
             options: [],
           };
         }
@@ -99,7 +105,6 @@ auth: linearAuth,
   labels: (required = false) =>
     Property.MultiSelectDropdown({
 auth: linearAuth,
-      description: 'Labels for the Issue',
       displayName: 'Labels',
       required,
       refreshers: ['auth', 'team_id'],
@@ -107,14 +112,14 @@ auth: linearAuth,
         if (!auth) {
           return {
             disabled: true,
-            placeholder: 'connect your account first',
+            placeholder: 'Connect your Linear account first',
             options: [],
           };
         }
         if (!team_id) {
           return {
             disabled: true,
-            placeholder: 'select a team to load labels',
+            placeholder: 'Select a team first',
             options: [],
           };
         }
@@ -274,7 +279,6 @@ auth: linearAuth,
   assignee_id: (required = false) =>
     Property.Dropdown({
 auth: linearAuth,
-      description: 'Assignee of the Issue / Comment',
       displayName: 'Assignee',
       required,
       refreshers: ['auth'],
@@ -282,7 +286,7 @@ auth: linearAuth,
         if (!auth) {
           return {
             disabled: true,
-            placeholder: 'connect your account first',
+            placeholder: 'Connect your Linear account first',
             options: [],
           };
         }
@@ -316,7 +320,6 @@ auth: linearAuth,
   priority_id: (required = false) =>
     Property.Dropdown({
 auth: linearAuth,
-      description: 'Priority of the Issue',
       displayName: 'Priority',
       required,
       refreshers: ['auth'],
@@ -324,7 +327,7 @@ auth: linearAuth,
         if (!auth) {
           return {
             disabled: true,
-            placeholder: 'connect your account first',
+            placeholder: 'Connect your Linear account first',
             options: [],
           };
         }
@@ -347,13 +350,20 @@ auth: linearAuth,
 auth: linearAuth,
       displayName: 'Issue',
       required,
-      description: 'ID of Linear Issue',
+      description: 'Pick a recent issue, or map an issue ID from an earlier step.',
       refreshers: ['team_id'],
       options: async ({ auth, team_id }) => {
-        if (!auth || !team_id) {
+        if (!auth) {
           return {
             disabled: true,
-            placeholder: 'connect your account first and select team',
+            placeholder: 'Connect your Linear account first',
+            options: [],
+          };
+        }
+        if (!team_id) {
+          return {
+            disabled: true,
+            placeholder: 'Select a team first',
             options: [],
           };
         }
@@ -372,7 +382,7 @@ auth: linearAuth,
         const issues = await client.listIssues(filter);
         return {
           disabled: false,
-          options: issues.nodes.map((issue: { title: any; id: any }) => {
+          options: issues.nodes.map((issue) => {
             return {
               label: issue.title,
               value: issue.id,
@@ -387,13 +397,20 @@ auth: linearAuth,
 auth: linearAuth,
       displayName: 'Project',
       required,
-      description: 'ID of Linear Project',
+      description: 'Pick a project, or map a project ID from an earlier step.',
       refreshers: ['team_id'],
       options: async ({ auth, team_id }) => {
-        if (!auth || !team_id) {
+        if (!auth) {
           return {
             disabled: true,
-            placeholder: 'connect your account first and select team',
+            placeholder: 'Connect your Linear account first',
+            options: [],
+          };
+        }
+        if (!team_id || typeof team_id !== 'string') {
+          return {
+            disabled: true,
+            placeholder: 'Select a team first',
             options: [],
           };
         }
@@ -405,6 +422,15 @@ auth: linearAuth,
 
         do {
           const projects = await client.listProjects({
+            filter: {
+              accessibleTeams: {
+                some: {
+                  id: {
+                    eq: team_id,
+                  },
+                },
+              },
+            },
             orderBy: LinearDocument.PaginationOrderBy.UpdatedAt,
             first: 100,
             after: cursor,
@@ -421,6 +447,7 @@ auth: linearAuth,
         return {
           disabled: false,
           options,
+          placeholder: options.length === 0 ? 'This team has no projects' : undefined,
         };
       },
     }),
@@ -455,8 +482,7 @@ auth: linearAuth,
     }),
   project_status: (required = false) =>
     Property.StaticDropdown({
-      displayName: 'Project Status',
-      description: 'The status of the project',
+      displayName: 'Status',
       required,
       options: {
         disabled: false,
@@ -475,13 +501,20 @@ auth: linearAuth,
 auth: linearAuth,
       displayName: 'Template',
       required,
-      description: 'ID of Template',
+      description: 'Pre-fills the issue; fields you set above override it.',
       refreshers: ['auth', 'team_id'],
       options: async ({ auth, team_id }) => {
-        if (!auth || !team_id) {
+        if (!auth) {
           return {
             disabled: true,
-            placeholder: 'connect your account first and select team',
+            placeholder: 'Connect your Linear account first',
+            options: [],
+          };
+        }
+        if (!team_id) {
+          return {
+            disabled: true,
+            placeholder: 'Select a team first',
             options: [],
           };
         }
